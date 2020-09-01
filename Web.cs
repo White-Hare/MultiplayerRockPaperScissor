@@ -70,55 +70,43 @@ public class Web : MonoBehaviour
 
     private void GetCard()
     {
-        IEnumerator SendRequest()
+
+        WWWForm form = new WWWForm();
+        form.AddField("player2name", player2Name);
+
+        StartCoroutine(SendRequest(baselink + "GetCard.php", form, (data) =>
         {
-            WWWForm form = new WWWForm();
-            form.AddField("player2name", player2Name);
-
-            using (UnityWebRequest www = UnityWebRequest.Post(baselink + "SendCard.php", form))
+            float ctime = Time.time;
+            do
             {
-                yield return www.SendWebRequest();
-
-                if (www.isNetworkError || www.isHttpError)
-                {
-                    Debug.Log("ERROR: " + www.error + "\nDATA: " + www.downloadHandler.text);
-                    yield break;
-                }
-
-                float ctime = Time.time;
-                do
-                {
-                    card2 = www.downloadHandler.text;
-                } while (String.IsNullOrEmpty(card2) && Time.time - ctime < timeout);
+                card2 = data;
+            } while (String.IsNullOrEmpty(card2) && Time.time - ctime < timeout);
 
 
 
-                if (!String.IsNullOrEmpty(card2))
-                {
-                    if (card1 == "Rock" && card2 == "Scissor")
-                        result.text = "YOU WIN";
+            if (!String.IsNullOrEmpty(card2))
+            {
+                if (card1 == "Rock" && card2 == "Scissor")
+                    result.text = "YOU WIN";
 
-                    else if (card1 == "Scissor" && card2 == "Paper")
-                        result.text = "YOU WIN";
+                else if (card1 == "Scissor" && card2 == "Paper")
+                    result.text = "YOU WIN";
 
-                    else if (card1 == "Paper" && card2 == "Rock")
-                        result.text = "YOU WIN";
+                else if (card1 == "Paper" && card2 == "Rock")
+                    result.text = "YOU WIN";
 
-                    else if (card1 == card2)
-                        result.text = "DRAW";
+                else if (card1 == card2)
+                    result.text = "DRAW";
 
-                    else
-                        result.text = "YOU LOSE";
-                }
                 else
-                    result.text = "DISCONNECTED";
-
-                result.gameObject.SetActive(true);
+                    result.text = "YOU LOSE";
             }
-        }
+            else
+                result.text = "DISCONNECTED";
 
+            result.gameObject.SetActive(true);
 
-        StartCoroutine(SendRequest());
+        }));
 
     }
 
@@ -141,6 +129,7 @@ public class Web : MonoBehaviour
 
     //private void OnApplicationQuit()
     //{
+    //    //Disconnect
     //    WWWForm form = new WWWForm();
     //    form.AddField("roomid", roomID);
     //    using (UnityWebRequest www = UnityWebRequest.Post(baselink + "Disconnect.php", form))
